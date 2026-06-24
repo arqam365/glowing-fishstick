@@ -110,12 +110,13 @@ compose.desktop {
     application {
         mainClass = "com.revzion.siitglobe.MainKt"
 
-        jvmArgs += listOf(
-            "-Xdock:name=SiiT",
-            "-Xdock:icon=${project.file("src/jvmMain/resources/icon.png").absolutePath}",
-            // Write JVM crash dump next to the startup log
-            "-XX:ErrorFile=%USER_HOME%/SiiT-logs/jvm-crash.log",
-        )
+        // -Xdock: flags are macOS-only — passing them on Windows crashes the JVM
+        if (System.getProperty("os.name")?.contains("Mac", ignoreCase = true) == true) {
+            jvmArgs += listOf(
+                "-Xdock:name=SiiT",
+                "-Xdock:icon=${project.file("src/jvmMain/resources/icon.png").absolutePath}",
+            )
+        }
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
