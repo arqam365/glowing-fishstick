@@ -113,6 +113,8 @@ compose.desktop {
         jvmArgs += listOf(
             "-Xdock:name=SiiT",
             "-Xdock:icon=${project.file("src/jvmMain/resources/icon.png").absolutePath}",
+            // Write JVM crash dump next to the startup log
+            "-XX:ErrorFile=%USER_HOME%/SiiT-logs/jvm-crash.log",
         )
 
         nativeDistributions {
