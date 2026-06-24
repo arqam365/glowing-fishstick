@@ -6,7 +6,7 @@ plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.composeMultiplatform)
     alias(libs.plugins.composeCompiler)
-    alias(libs.plugins.composeHotReload)
+    alias(libs.plugins.kotlinSerialization)
 }
 
 kotlin {
@@ -15,7 +15,7 @@ kotlin {
             jvmTarget.set(JvmTarget.JVM_11)
         }
     }
-    
+
     listOf(
         iosArm64(),
         iosSimulatorArm64()
@@ -25,13 +25,14 @@ kotlin {
             isStatic = true
         }
     }
-    
+
     jvm()
-    
+
     sourceSets {
         androidMain.dependencies {
             implementation(compose.preview)
             implementation(libs.androidx.activity.compose)
+            implementation(libs.ktor.client.okhttp)
         }
         commonMain.dependencies {
             implementation(compose.runtime)
@@ -42,13 +43,29 @@ kotlin {
             implementation(compose.components.uiToolingPreview)
             implementation(libs.androidx.lifecycle.viewmodelCompose)
             implementation(libs.androidx.lifecycle.runtimeCompose)
+            implementation(libs.ktor.client.core)
+            implementation(libs.ktor.client.content.negotiation)
+            implementation(libs.ktor.serialization.kotlinx.json)
+            implementation(libs.ktor.client.logging)
+            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.multiplatform.settings.no.arg)
+            implementation(compose.materialIconsExtended)
+            implementation(libs.voyager.navigator)
+            implementation(libs.voyager.screenmodel)
+            implementation(libs.voyager.transitions)
+            implementation(libs.kotlinx.datetime)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)
         }
+        iosMain.dependencies {
+            implementation(libs.ktor.client.darwin)
+        }
         jvmMain.dependencies {
             implementation(compose.desktop.currentOs)
             implementation(libs.kotlinx.coroutinesSwing)
+            implementation(libs.ktor.client.cio)
+            implementation(libs.kotlinx.datetime)
         }
     }
 }
@@ -84,14 +101,51 @@ dependencies {
     debugImplementation(compose.uiTooling)
 }
 
+configurations.all {
+    resolutionStrategy.force("org.jetbrains.kotlinx:kotlinx-datetime:0.6.1")
+    resolutionStrategy.force("org.jetbrains.kotlinx:kotlinx-datetime-jvm:0.6.1")
+}
+
 compose.desktop {
     application {
         mainClass = "com.revzion.siitglobe.MainKt"
 
+        jvmArgs += listOf(
+            "-Xdock:name=SiiT",
+            "-Xdock:icon=${project.file("src/jvmMain/resources/icon.png").absolutePath}",
+        )
+
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
-            packageName = "com.revzion.siitglobe"
+            packageName = "SiiT"
             packageVersion = "1.0.0"
+            description = "SiiT Student Management"
+            copyright = "© 2024 Revzion"
+            vendor = "Revzion"
+
+            macOS {
+                iconFile.set(project.file("src/jvmMain/resources/icon.png"))
+                bundleID = "com.revzion.siitglobe"
+                appCategory = "public.app-category.education"
+            }
+
+            windows {
+                iconFile.set(project.file("src/jvmMain/resources/icon.ico"))
+                // Creates a Start Menu shortcut
+                menuGroup = "SiiT"
+                shortcut = true
+                dirChooser = true
+                perUserInstall = true
+                upgradeUuid = "A1B2C3D4-E5F6-7890-ABCD-EF1234567890"
+            }
+
+            linux {
+                iconFile.set(project.file("src/jvmMain/resources/icon.png"))
+                packageName = "siit"
+                debMaintainer = "support@revzion.com"
+                menuGroup = "Education"
+                appCategory = "Education"
+            }
         }
     }
 }
