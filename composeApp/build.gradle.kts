@@ -133,11 +133,13 @@ compose.desktop {
 
             windows {
                 iconFile.set(project.file("src/jvmMain/resources/icon.ico"))
-                // Creates a Start Menu shortcut
                 menuGroup = "SiiT"
                 shortcut = true
                 dirChooser = true
                 perUserInstall = true
+                // Fixed UUID — Windows uses this to detect the existing installation.
+                // When a user runs a newer MSI, Windows Installer will prompt to upgrade
+                // (remove old version and install new) or abort. Same UUID across all versions.
                 upgradeUuid = "A1B2C3D4-E5F6-7890-ABCD-EF1234567890"
             }
 

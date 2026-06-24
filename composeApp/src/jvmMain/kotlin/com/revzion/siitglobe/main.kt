@@ -27,7 +27,6 @@ fun main() {
     log("Log file: ${logFile.absolutePath}")
 
     try {
-        // macOS: follow system dark/light mode for window chrome
         System.setProperty("apple.awt.application.appearance", "system")
         log("System properties set")
 
@@ -40,7 +39,7 @@ fun main() {
                     log("Icon resource found")
                     BitmapPainter(loadImageBitmap(stream))
                 } else {
-                    log("WARNING: icon.png resource not found")
+                    log("WARNING: icon.png not found")
                     null
                 }
             }.onFailure { log("ERROR loading icon: ${it.message}") }.getOrNull()
@@ -52,34 +51,29 @@ fun main() {
                     if (url != null) taskbar.iconImage = javax.imageio.ImageIO.read(url)
                     log("macOS dock icon set")
                 }
-            }.onFailure { log("WARNING: macOS dock icon failed: ${it.message}") }
+            }.onFailure { log("WARNING: macOS dock icon: ${it.message}") }
 
             log("Creating Window...")
             Window(
                 onCloseRequest = {
-                    log("Window close requested")
+                    log("Window closed")
                     exitApplication()
                 },
                 title = "SiiT",
                 icon = iconBitmap,
             ) {
                 log("Window created, loading App()")
-                try {
-                    App()
-                    log("App() loaded successfully")
-                } catch (e: Throwable) {
-                    log("FATAL: App() crashed: ${e.message}\n${e.stackTraceToString()}")
-                    throw e
-                }
+                // Note: try-catch is NOT allowed around composable calls in Compose.
+                // Errors inside App() will be caught by the outer try-catch in main().
+                App()
             }
         }
 
         log("Application exited normally")
     } catch (e: Throwable) {
         log("FATAL CRASH: ${e.message}\n${e.stackTraceToString()}")
-        // Show a plain AWT error dialog so the user isn't left with nothing
         try {
-            val msg = "SiiT failed to start.\n\nError: ${e.message}\n\nCheck log: ${logFile.absolutePath}"
+            val msg = "SiiT failed to start.\n\nError: ${e.message}\n\nLog: ${logFile.absolutePath}"
             javax.swing.JOptionPane.showMessageDialog(null, msg, "SiiT Error", javax.swing.JOptionPane.ERROR_MESSAGE)
         } catch (_: Throwable) {}
     }
