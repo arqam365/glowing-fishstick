@@ -78,8 +78,8 @@ android {
         applicationId = "com.revzion.siitglobe"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 3
+        versionName = "1.0.2"
     }
     packaging {
         resources {
@@ -110,15 +110,18 @@ compose.desktop {
     application {
         mainClass = "com.revzion.siitglobe.MainKt"
 
-        jvmArgs += listOf(
-            "-Xdock:name=SiiT",
-            "-Xdock:icon=${project.file("src/jvmMain/resources/icon.png").absolutePath}",
-        )
+        // -Xdock: flags are macOS-only — passing them on Windows crashes the JVM
+        if (System.getProperty("os.name")?.contains("Mac", ignoreCase = true) == true) {
+            jvmArgs += listOf(
+                "-Xdock:name=SiiT",
+                "-Xdock:icon=${project.file("src/jvmMain/resources/icon.png").absolutePath}",
+            )
+        }
 
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "SiiT"
-            packageVersion = "1.0.0"
+            packageVersion = "1.0.2"
             description = "SiiT Student Management"
             copyright = "© 2024 Revzion"
             vendor = "Revzion"
@@ -131,11 +134,13 @@ compose.desktop {
 
             windows {
                 iconFile.set(project.file("src/jvmMain/resources/icon.ico"))
-                // Creates a Start Menu shortcut
                 menuGroup = "SiiT"
                 shortcut = true
                 dirChooser = true
                 perUserInstall = true
+                // Fixed UUID — Windows uses this to detect the existing installation.
+                // When a user runs a newer MSI, Windows Installer will prompt to upgrade
+                // (remove old version and install new) or abort. Same UUID across all versions.
                 upgradeUuid = "A1B2C3D4-E5F6-7890-ABCD-EF1234567890"
             }
 
