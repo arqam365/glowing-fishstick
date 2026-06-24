@@ -1,49 +1,63 @@
 package com.revzion.siitglobe
 
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.safeContentPadding
-import androidx.compose.material3.Button
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import org.jetbrains.compose.resources.painterResource
-import org.jetbrains.compose.ui.tooling.preview.Preview
-
-import siitglobe.composeapp.generated.resources.Res
-import siitglobe.composeapp.generated.resources.compose_multiplatform
+import com.revzion.siitglobe.data.api.AuthApi
+import com.revzion.siitglobe.data.api.SiitApi
+import com.revzion.siitglobe.data.api.createHttpClient
+import com.revzion.siitglobe.data.repository.AuthRepository
+import com.revzion.siitglobe.data.repository.SiitRepository
+import com.revzion.siitglobe.data.storage.TokenStorage
+import com.revzion.siitglobe.presentation.auth.LoginScreen
+import com.revzion.siitglobe.presentation.main.MainScreen
+import com.revzion.siitglobe.presentation.theme.SiitTheme
+import com.revzion.siitglobe.presentation.theme.ThemeMode
+import com.revzion.siitglobe.viewmodel.AuthViewModel
+import com.revzion.siitglobe.viewmodel.SiitViewModel
 
 @Composable
-@Preview
 fun App() {
-    MaterialTheme {
-        var showContent by remember { mutableStateOf(false) }
-        Column(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primaryContainer)
-                .safeContentPadding()
-                .fillMaxSize(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
-            Button(onClick = { showContent = !showContent }) {
-                Text("Click me!")
-            }
-            AnimatedVisibility(showContent) {
-                val greeting = remember { Greeting().greet() }
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                ) {
-                    Image(painterResource(Res.drawable.compose_multiplatform), null)
-                    Text("Compose: $greeting")
+    val storage = remember { TokenStorage() }
+    val httpClient = remember { createHttpClient() }
+    val authApi = remember { AuthApi(httpClient) }
+    val siitApi = remember { SiitApi(httpClient) }
+    val authRepository = remember { AuthRepository(authApi, storage) }
+    val siitRepository = remember { SiitRepository(siitApi, storage) }
+
+    var themeMode by remember { mutableStateOf(ThemeMode.SYSTEM) }
+    var isLoggedIn by remember { mutableStateOf(authRepository.isLoggedIn()) }
+    var loggedInUserName by remember { mutableStateOf("Admin") }
+
+    SiitTheme(themeMode = themeMode) {
+        if (isLoggedIn) {
+            val siitViewModel = remember { SiitViewModel(siitRepository) }
+            MainScreen(
+                userName = loggedInUserName,
+                siitViewModel = siitViewModel,
+                onLogout = {
+                    isLoggedIn = false
+                    loggedInUserName = "Admin"
+                }
+            )
+        } else {
+            val viewModel = remember { AuthViewModel(authRepository) }
+            val state by viewModel.state.collectAsState()
+
+            LaunchedEffect(state.isSuccess) {
+                if (state.isSuccess) {
+                    loggedInUserName = state.user?.name ?: "Admin"
+                    isLoggedIn = true
                 }
             }
+
+            LoginScreen(
+                viewModel = viewModel,
+                onLoginSuccess = {
+                    loggedInUserName = state.user?.name ?: "Admin"
+                    isLoggedIn = true
+                },
+                currentTheme = themeMode,
+                onThemeChange = { themeMode = it }
+            )
         }
     }
 }
