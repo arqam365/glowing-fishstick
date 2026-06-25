@@ -21,10 +21,12 @@ import androidx.compose.ui.unit.dp
 import com.revzion.siitglobe.presentation.attendance.AttendanceScreen
 import com.revzion.siitglobe.presentation.course.CoursesScreen
 import com.revzion.siitglobe.presentation.dashboard.DashboardScreen
+import com.revzion.siitglobe.presentation.forms.FormsScreen
 import com.revzion.siitglobe.presentation.payment.PaymentsScreen
 import com.revzion.siitglobe.presentation.student.StudentDetailScreen
 import com.revzion.siitglobe.presentation.student.StudentListScreen
 import com.revzion.siitglobe.presentation.student.StudentRegistrationScreen
+import com.revzion.siitglobe.viewmodel.FormsViewModel
 import com.revzion.siitglobe.viewmodel.SiitViewModel
 
 private data class NavItem(
@@ -38,6 +40,7 @@ private val navItems = listOf(
     NavItem("Payments", Icons.Default.Payments),
     NavItem("Attendance", Icons.Default.CalendarToday),
     NavItem("Courses", Icons.Default.School),
+    NavItem("Forms", Icons.Default.Assignment),
 )
 
 private sealed class StudentsNav {
@@ -48,7 +51,7 @@ private sealed class StudentsNav {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MainScreen(userName: String, siitViewModel: SiitViewModel, onLogout: () -> Unit) {
+fun MainScreen(userName: String, siitViewModel: SiitViewModel, formsViewModel: FormsViewModel, onLogout: () -> Unit) {
     var selectedTab by remember { mutableIntStateOf(0) }
 
     BoxWithConstraints {
@@ -69,7 +72,7 @@ fun MainScreen(userName: String, siitViewModel: SiitViewModel, onLogout: () -> U
                         .fillMaxHeight()
                         .background(MaterialTheme.colorScheme.background)
                 ) {
-                    TabContent(selectedTab, userName, siitViewModel, onTabChange = { selectedTab = it }, onLogout = onLogout)
+                    TabContent(selectedTab, userName, siitViewModel, formsViewModel, onTabChange = { selectedTab = it }, onLogout = onLogout)
                 }
             }
         } else {
@@ -108,7 +111,7 @@ fun MainScreen(userName: String, siitViewModel: SiitViewModel, onLogout: () -> U
                         .padding(padding)
                         .background(MaterialTheme.colorScheme.background)
                 ) {
-                    TabContent(selectedTab, userName, siitViewModel, onTabChange = { selectedTab = it }, onLogout = onLogout)
+                    TabContent(selectedTab, userName, siitViewModel, formsViewModel, onTabChange = { selectedTab = it }, onLogout = onLogout)
                 }
             }
         }
@@ -194,6 +197,7 @@ private fun TabContent(
     selectedTab: Int,
     userName: String,
     siitViewModel: SiitViewModel,
+    formsViewModel: FormsViewModel,
     onTabChange: (Int) -> Unit,
     onLogout: () -> Unit,
 ) {
@@ -216,6 +220,7 @@ private fun TabContent(
             2 -> PaymentsScreen(siitViewModel)
             3 -> AttendanceScreen(siitViewModel)
             4 -> CoursesScreen(siitViewModel)
+            5 -> FormsScreen(formsViewModel)
         }
     }
 }
