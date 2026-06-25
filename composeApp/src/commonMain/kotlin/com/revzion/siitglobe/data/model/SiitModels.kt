@@ -119,6 +119,72 @@ data class MarkAttendanceRequest(
     val note: String? = null,
 )
 
+// ── Forms DTOs ───────────────────────────────────────────────────────────────
+
+@Serializable
+data class FormFieldDto(
+    val id: String,
+    val formId: String,
+    val label: String,
+    val type: String,
+    val required: Boolean = false,
+    val options: List<String> = emptyList(),
+    val order: Int = 0,
+)
+
+@Serializable
+data class FormTemplateDto(
+    val id: String,
+    val title: String,
+    val description: String = "",
+    val fields: List<FormFieldDto> = emptyList(),
+    val createdAt: String? = null,
+)
+
+@Serializable
+data class FormAnswerDto(
+    val id: String,
+    val responseId: String,
+    val fieldId: String,
+    val value: String = "",
+)
+
+@Serializable
+data class FormResponseDto(
+    val id: String,
+    val formId: String,
+    val submittedAt: String,
+    val answers: List<FormAnswerDto> = emptyList(),
+)
+
+@Serializable
+data class CreateFormRequest(
+    val title: String,
+    val description: String = "",
+    val fields: List<CreateFormFieldRequest> = emptyList(),
+)
+
+@Serializable
+data class CreateFormFieldRequest(
+    val label: String,
+    val type: String,
+    val required: Boolean = false,
+    val options: List<String> = emptyList(),
+    val order: Int = 0,
+)
+
+@Serializable
+data class SubmitResponseRequest(
+    val submittedAt: String,
+    val answers: List<SubmitAnswerRequest> = emptyList(),
+)
+
+@Serializable
+data class SubmitAnswerRequest(
+    val fieldId: String,
+    val value: String = "",
+)
+
 // ── Mappers ──────────────────────────────────────────────────────────────────
 
 fun StudentDto.toDomain() = Student(
@@ -175,4 +241,27 @@ fun PaymentDto.toDomain() = Payment(
     transactionId = transactionId,
     remarks = remarks,
     createdAt = createdAt ?: "",
+)
+
+fun FormFieldDto.toDomain() = com.revzion.siitglobe.domain.model.FormField(
+    id = id,
+    label = label,
+    type = runCatching { com.revzion.siitglobe.domain.model.FieldType.valueOf(type) }.getOrElse { com.revzion.siitglobe.domain.model.FieldType.TEXT },
+    required = required,
+    options = options,
+)
+
+fun FormTemplateDto.toDomain() = com.revzion.siitglobe.domain.model.FormTemplate(
+    id = id,
+    title = title,
+    description = description,
+    fields = fields.sortedBy { it.order }.map { it.toDomain() },
+    createdAt = runCatching { LocalDate.parse(createdAt!!.take(10)) }.getOrElse { LocalDate(2024, 1, 1) },
+)
+
+fun FormResponseDto.toDomain() = com.revzion.siitglobe.domain.model.FormResponse(
+    id = id,
+    formId = formId,
+    submittedAt = runCatching { LocalDate.parse(submittedAt.take(10)) }.getOrElse { LocalDate(2024, 1, 1) },
+    answers = answers.map { com.revzion.siitglobe.domain.model.FormAnswer(fieldId = it.fieldId, value = it.value) },
 )

@@ -75,6 +75,7 @@ fun FormsScreen(formsViewModel: FormsViewModel) {
         }
         is FormsNav.Responses -> {
             val form = formsViewModel.getForm(screen.formId)
+            LaunchedEffect(screen.formId) { formsViewModel.loadResponses(screen.formId) }
             if (form != null) {
                 FormResponsesScreen(
                     form = form,
