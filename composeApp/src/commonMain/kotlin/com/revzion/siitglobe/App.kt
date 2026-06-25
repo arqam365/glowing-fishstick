@@ -5,6 +5,7 @@ import com.revzion.siitglobe.data.api.AuthApi
 import com.revzion.siitglobe.data.api.SiitApi
 import com.revzion.siitglobe.data.api.createHttpClient
 import com.revzion.siitglobe.data.repository.AuthRepository
+import com.revzion.siitglobe.data.repository.FormsRepository
 import com.revzion.siitglobe.data.repository.SiitRepository
 import com.revzion.siitglobe.data.storage.TokenStorage
 import com.revzion.siitglobe.presentation.auth.LoginScreen
@@ -31,7 +32,8 @@ fun App() {
     SiitTheme(themeMode = themeMode) {
         if (isLoggedIn) {
             val siitViewModel = remember { SiitViewModel(siitRepository) }
-            val formsViewModel = remember { FormsViewModel() }
+            val formsRepository = remember { FormsRepository(siitApi, storage) }
+            val formsViewModel = remember { FormsViewModel(formsRepository) }
             MainScreen(
                 userName = loggedInUserName,
                 siitViewModel = siitViewModel,

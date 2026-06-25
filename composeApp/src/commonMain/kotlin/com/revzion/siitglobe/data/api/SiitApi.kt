@@ -1,6 +1,7 @@
 package com.revzion.siitglobe.data.api
 
 import com.revzion.siitglobe.data.model.*
+import io.ktor.client.request.delete
 import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
@@ -89,6 +90,50 @@ class SiitApi(private val client: HttpClient) {
 
     suspend fun seedCourses(token: String): Result<Unit> = runCatching {
         client.post("$BASE_URL/api/seed") { bearerAuth(token) }
+        Unit
+    }
+
+    // ── Forms ────────────────────────────────────────────────────────────────
+
+    suspend fun getForms(token: String): Result<List<FormTemplateDto>> = runCatching {
+        client.get("$BASE_URL/api/forms") { bearerAuth(token) }.body()
+    }
+
+    suspend fun createForm(token: String, request: CreateFormRequest): Result<FormTemplateDto> = runCatching {
+        client.post("$BASE_URL/api/forms") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.body()
+    }
+
+    suspend fun updateForm(token: String, id: String, request: CreateFormRequest): Result<FormTemplateDto> = runCatching {
+        client.put("$BASE_URL/api/forms/$id") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.body()
+    }
+
+    suspend fun deleteForm(token: String, id: String): Result<Unit> = runCatching {
+        client.delete("$BASE_URL/api/forms/$id") { bearerAuth(token) }
+        Unit
+    }
+
+    suspend fun getResponses(token: String, formId: String): Result<List<FormResponseDto>> = runCatching {
+        client.get("$BASE_URL/api/forms/$formId/responses") { bearerAuth(token) }.body()
+    }
+
+    suspend fun submitResponse(token: String, formId: String, request: SubmitResponseRequest): Result<FormResponseDto> = runCatching {
+        client.post("$BASE_URL/api/forms/$formId/responses") {
+            bearerAuth(token)
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.body()
+    }
+
+    suspend fun deleteResponse(token: String, formId: String, responseId: String): Result<Unit> = runCatching {
+        client.delete("$BASE_URL/api/forms/$formId/responses/$responseId") { bearerAuth(token) }
         Unit
     }
 }
