@@ -12,6 +12,7 @@ import com.revzion.siitglobe.presentation.main.MainScreen
 import com.revzion.siitglobe.presentation.theme.SiitTheme
 import com.revzion.siitglobe.presentation.theme.ThemeMode
 import com.revzion.siitglobe.viewmodel.AuthViewModel
+import com.revzion.siitglobe.viewmodel.FormsViewModel
 import com.revzion.siitglobe.viewmodel.SiitViewModel
 
 @Composable
@@ -30,9 +31,11 @@ fun App() {
     SiitTheme(themeMode = themeMode) {
         if (isLoggedIn) {
             val siitViewModel = remember { SiitViewModel(siitRepository) }
+            val formsViewModel = remember { FormsViewModel() }
             MainScreen(
                 userName = loggedInUserName,
                 siitViewModel = siitViewModel,
+                formsViewModel = formsViewModel,
                 onLogout = {
                     isLoggedIn = false
                     loggedInUserName = "Admin"
