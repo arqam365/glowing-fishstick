@@ -78,8 +78,8 @@ android {
         applicationId = "com.revzion.siitglobe"
         minSdk = libs.versions.android.minSdk.get().toInt()
         targetSdk = libs.versions.android.targetSdk.get().toInt()
-        versionCode = 4
-        versionName = "1.0.3"
+        versionCode = 5
+        versionName = "1.0.4"
     }
     packaging {
         resources {
@@ -121,7 +121,7 @@ compose.desktop {
         nativeDistributions {
             targetFormats(TargetFormat.Dmg, TargetFormat.Msi, TargetFormat.Deb)
             packageName = "SiiT"
-            packageVersion = "1.0.3"
+            packageVersion = "1.0.4"
             description = "SiiT Student Management"
             copyright = "© 2024 Revzion"
             vendor = "Revzion"
